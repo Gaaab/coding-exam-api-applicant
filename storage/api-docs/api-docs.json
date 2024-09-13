@@ -1,0 +1,29 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Authentication",
+        "version": "0.1"
+    },
+    "paths": {
+        "/api/auth/login": {
+            "get": {
+                "operationId": "a0f18fae7a6f76a1ea8278ec4a8c3e2e",
+                "responses": {
+                    "200": {
+                        "description": "Response array"
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "operationId": "46f8a14c8083abb69eed72768aa08629",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        }
+    }
+}
