@@ -11,7 +11,7 @@ class PostService
 {
     public static $statuses = ['DRAFT', 'PUBLISHED'];
 
-    public function allPosts(User $user, $options = [])
+    public function allPosts(User $user, $payload = [])
     {
         // Only admin can get all posts
         if ($user->role->name !== 'admin') {
@@ -29,22 +29,22 @@ class PostService
         return $posts->get();
     }
 
-    public function selfPosts(User $user, $options = [])
+    public function selfPosts(User $user, $payload = [])
     {
         $posts = $user->posts();
 
-        if ($payload['paginate'] ?? false) {
-            $posts
-                ->orderBy($payload['sortBy'] ?? 'id', $payload['sortDirection'] ?? 'desc')
-                ->paginate($payload['rowsPerPage'] ?? 10);
+        if (isset($payload['paginate']) && (bool) $payload['paginate'] === false) {
+            return $posts->get();
         }
 
-        return $posts->get();
+        return $posts
+            ->orderBy($payload['sortBy'] ?? 'id', $payload['sortDirection'] ?? 'desc')
+            ->paginate($payload['rowsPerPage'] ?? 10);
     }
 
     public function findPost(Post $post)
     {
-
+        return $post;
     }
 
     public function createPost(User $user, PostDto $payload): Post
@@ -59,23 +59,11 @@ class PostService
         return $post->fresh(['user']);
     }
 
-    public function publishPost(Post $post)
-    {
+    public function publishPost(Post $post) {}
 
-    }
+    public function draftPost(Post $post) {}
 
-    public function draftPost(Post $post)
-    {
+    public function archivePost(Post $post) {}
 
-    }
-
-    public function archivePost(Post $post)
-    {
-
-    }
-
-    public function restorePost(Post $post)
-    {
-
-    }
+    public function restorePost(Post $post) {}
 }

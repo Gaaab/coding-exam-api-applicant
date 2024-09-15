@@ -4,6 +4,12 @@
     "description": "The skeleton application for the Laravel framework.",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Gaaab/swagger-php"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "darkaonline/l5-swagger": "^8.6",
@@ -13,7 +19,7 @@
         "laravel/telescope": "^5.2",
         "laravel/tinker": "^2.9",
         "predis/predis": "^2.2",
-        "zircote/swagger-php": "^4.10"
+        "zircote/swagger-php": "dev-master"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

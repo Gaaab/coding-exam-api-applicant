@@ -1,28 +1,798 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Authentication",
+        "title": "Cashbee Coding Exam Api Documentation",
         "version": "0.1"
     },
     "paths": {
         "/api/auth/login": {
-            "get": {
-                "operationId": "a0f18fae7a6f76a1ea8278ec4a8c3e2e",
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "User login",
+                "operationId": "535ffeda4b78916efd658b2844ea897a",
+                "parameters": [
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "description": "Media type expected by the client",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "application/json"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Login credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
-                        "description": "Response array"
+                        "description": "Login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "JWT_TOKEN_HERE"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "example": "0000-00-00 00:00:00"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
                     }
                 }
             }
         },
         "/api/auth/logout": {
             "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "User logout",
                 "operationId": "46f8a14c8083abb69eed72768aa08629",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Bearer token for user authentication",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Bearer JWT_TOKEN_HERE"
+                        }
+                    },
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "description": "Media type expected by the client",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "application/json"
+                        }
+                    }
+                ],
                 "responses": {
                     "204": {
-                        "description": "No Content"
+                        "description": "Logout successful"
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid or missing token"
                     }
                 }
+            }
+        },
+        "/api/posts": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Retrieve current user posts",
+                "operationId": "f11765a8d330e514170cca0b0232cb67",
+                "parameters": [
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "description": "Media type expected by the client",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "application/json"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Current user posts retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "user_id": {
+                                                "type": "integer",
+                                                "example": 2
+                                            },
+                                            "title": {
+                                                "type": "string",
+                                                "example": "Velit id tempore autem quasi qui."
+                                            },
+                                            "banner_image_url": {
+                                                "type": "string",
+                                                "example": "https://via.placeholder.com/800x400.png/0022ff?text=business+nostrum"
+                                            },
+                                            "body": {
+                                                "type": "string",
+                                                "example": "Officiis qui eveniet nesciunt reprehenderit natus dicta molestiae voluptatum."
+                                            },
+                                            "published_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-09-15 04:44:06"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "example": "PUBLISHED"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-09-15 04:44:06"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-09-15 04:44:06"
+                                            },
+                                            "deleted_at": {
+                                                "type": "string",
+                                                "example": null,
+                                                "nullable": true
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": {
+                    "sanctum": {
+                        "bearerAuth": []
+                    }
+                }
+            }
+        },
+        "/api/posts/all": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Retrieve all posts (admin only)",
+                "operationId": "e965d2b5121ae5ac5e24c8d7c4bce43b",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Bearer token for user authentication",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Bearer JWT_TOKEN_HERE"
+                        }
+                    },
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "description": "Media type expected by the client",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "application/json"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "All posts retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "user_id": {
+                                                "type": "integer",
+                                                "example": 2
+                                            },
+                                            "title": {
+                                                "type": "string",
+                                                "example": "Velit id tempore autem quasi qui."
+                                            },
+                                            "banner_image_url": {
+                                                "type": "string",
+                                                "example": "https://via.placeholder.com/800x400.png/0022ff?text=business+nostrum"
+                                            },
+                                            "body": {
+                                                "type": "string",
+                                                "example": "Officiis qui eveniet nesciunt reprehenderit natus dicta molestiae voluptatum."
+                                            },
+                                            "published_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-09-15 04:44:06"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "example": "PUBLISHED"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-09-15 04:44:06"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-09-15 04:44:06"
+                                            },
+                                            "deleted_at": {
+                                                "type": "string",
+                                                "example": null,
+                                                "nullable": true
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorize - User does not exists",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "The following user does not exists."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - User does not have the required role",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "You do not have the required role to access this resource."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/posts/create": {
+            "post": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Create a new post for the current user",
+                "operationId": "e23b6c439c19d51685577415f72d661c",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Bearer token for user authentication",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Bearer JWT_TOKEN_HERE"
+                        }
+                    },
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "description": "Media type expected by the client",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "application/json"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Post details",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "My New Post"
+                                    },
+                                    "body": {
+                                        "type": "string",
+                                        "example": "This is the content of my post."
+                                    },
+                                    "banner_image_url": {
+                                        "type": "string",
+                                        "example": "https://via.placeholder.com/800x400.png/0022ff?text=business+nostrum"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Post created successfully"
+                    }
+                }
+            }
+        },
+        "/api/posts/{post}/archive": {
+            "post": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Archive a post by ID",
+                "operationId": "8df2566cf1c794e8a3a8bce1a95ef40c",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Bearer token for user authentication",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Bearer JWT_TOKEN_HERE"
+                        }
+                    },
+                    {
+                        "name": "post",
+                        "in": "path",
+                        "description": "ID of the post to be archived",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "description": "Media type expected by the client",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "application/json"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Post archived successfully"
+                    }
+                }
+            }
+        },
+        "/api/posts/{post}/restore": {
+            "post": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Restore an archived post by ID",
+                "operationId": "cb6fcd0bbde4d96e92e733c903f4d498",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Bearer token for user authentication",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Bearer JWT_TOKEN_HERE"
+                        }
+                    },
+                    {
+                        "name": "post",
+                        "in": "path",
+                        "description": "ID of the post to be restored",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "description": "Media type expected by the client",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "application/json"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Post restored successfully"
+                    }
+                }
+            }
+        },
+        "/api/posts/{post}/find": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Find a post by ID",
+                "operationId": "eaf6ec961d7d5f0a01f9161243abc7b0",
+                "parameters": [
+                    {
+                        "name": "post",
+                        "in": "path",
+                        "description": "ID of the post to find",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "description": "Media type expected by the client",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "application/json"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Post retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "user_id": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Velit id tempore autem quasi qui."
+                                        },
+                                        "banner_image_url": {
+                                            "type": "string",
+                                            "example": "https://via.placeholder.com/800x400.png/0022ff?text=business+nostrum"
+                                        },
+                                        "body": {
+                                            "type": "string",
+                                            "example": "Officiis qui eveniet nesciunt reprehenderit natus dicta molestiae voluptatum."
+                                        },
+                                        "published_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-09-15 04:44:06"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "PUBLISHED"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-09-15 04:44:06"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-09-15 04:44:06"
+                                        },
+                                        "deleted_at": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Post not found"
+                    }
+                },
+                "security": {
+                    "sanctum": {}
+                }
+            }
+        },
+        "/api/posts/{post}/update-status": {
+            "post": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Update the status of a post by ID",
+                "operationId": "a4bcb6e2a6026c320273fd07d8b0f753",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Bearer token for user authentication",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Bearer JWT_TOKEN_HERE"
+                        }
+                    },
+                    {
+                        "name": "post",
+                        "in": "path",
+                        "description": "ID of the post to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "description": "Media type expected by the client",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "application/json"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Status update details",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "DRAFT",
+                                            "PUBLISHED"
+                                        ],
+                                        "example": "PUBLISHED"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Post status updated successfully"
+                    },
+                    "404": {
+                        "description": "Post not found"
+                    }
+                }
+            }
+        },
+        "/api/users/self": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Retrieve authenticated user details",
+                "operationId": "c97f66ff974930e74632a10001bdaa77",
+                "parameters": [
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "description": "Media type expected by the client",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "application/json"
+                        }
+                    },
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Bearer token for user authentication",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Bearer JWT_TOKEN_HERE"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User details retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "role_id": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "first_name": {
+                                            "type": "string",
+                                            "example": "Example"
+                                        },
+                                        "middle_name": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "last_name": {
+                                            "type": "string",
+                                            "example": "User"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "example": "user123@example.com"
+                                        },
+                                        "email_verified_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-09-15 04:44:06"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-09-15 04:44:06"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-09-15 04:44:06"
+                                        },
+                                        "deleted_at": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "role": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "user"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": null,
+                                                    "nullable": true
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2024-09-15 04:44:06"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2024-09-15 04:44:06"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid or missing token"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Operations related to authentication"
+        },
+        {
+            "name": "Posts",
+            "description": "Operations related to posts"
+        },
+        {
+            "name": "Users",
+            "description": "Operations related to users"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Enter token in format (Bearer <token>)",
+                "scheme": "bearer",
+                "in": "header",
+                "bearerAuth": "bearerAuth",
+                "bearerFormat": "JWT"
+            },
+            "sanctum": {
+                "bearerAuth": []
             }
         }
     }

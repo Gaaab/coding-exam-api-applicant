@@ -27,9 +27,9 @@ Route::middleware('api', 'auth:sanctum')->group(function () {
         Route::get('/', [PostsController::class, 'selfPosts']);
         Route::get('all', [PostsController::class, 'allPosts'])->middleware(AdminOnlyMiddleware::class);
         Route::get('create', [PostsController::class, 'createPost']);
-        Route::post('archive', [PostsController::class, 'archivePost']);
-        Route::post('restore', [PostsController::class, 'restorePost']);
-        Route::post('{post}/find', [PostsController::class, 'findPost']);
+        Route::post('{post}/archive', [PostsController::class, 'archivePost']);
+        Route::post('{post}/restore', [PostsController::class, 'restorePost']);
+        Route::get('{post}/find', [PostsController::class, 'findPost']);
         Route::post('{post}/update-status', [PostsController::class, 'update-status']);
     });
 });

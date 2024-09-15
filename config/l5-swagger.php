@@ -110,8 +110,8 @@ return [
             'default_processors_configuration' => [
                 '*Controller.php',
                 '*Schema.php',
-            /** Example */
-            /**
+                /** Example */
+                /**
              * 'operationId.hash' => true,
              * 'pathFilter' => [
              * 'tags' => [
@@ -210,13 +210,25 @@ return [
                         ],
                     ],
                 ],
-                'sanctum' => [ // Unique name of security
-                    'type' => 'apiKey', // Valid values are "basic", "apiKey" or "oauth2".
-                    'description' => 'Enter token in format (Bearer <token>)',
-                    'name' => 'Authorization', // The name of the header or query parameter to be used.
-                    'in' => 'header', // The location of the API key. Valid values are "query" or "header".
-                ],
                 */
+
+                'bearerAuth' => [ // Unique name of security
+                    'type' => 'http',
+                    'description' => 'Enter token in format (Bearer <token>)',
+                    'scheme' => 'bearer',
+                    'in' => 'header',
+                    'bearerAuth' => 'bearerAuth',
+                    'bearerFormat' => 'JWT',
+                ],
+
+                'sanctum' => [ // Unique name of security
+                    'bearerAuth' => [],
+                    //'type' => 'apiKey', // Valid values are "basic", "apiKey" or "oauth2".
+                    //'description' => 'Enter token in format (Bearer <token>)',
+                    //'bearerFormat' => 'JWT',
+                    //'name' => 'Authorization', // The name of the header or query parameter to be used.
+                    //'in' => 'header', // The location of the API key. Valid values are "query" or "header".
+                ],
             ],
             'security' => [
                 /*
@@ -230,8 +242,7 @@ return [
                     ],
 
                     'passport' => []
-                    */
-                ],
+                    */],
             ],
         ],
 

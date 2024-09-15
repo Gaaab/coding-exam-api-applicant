@@ -19,11 +19,11 @@ class AdminOnlyMiddleware
         $user = $request->user();
 
         if (!$user) {
-            throw new UnauthorizedException("No user found error.", 401);
+            throw new UnauthorizedException('No user found error.', 401);
         }
 
         if (!$user->role || $user->role->name !== 'admin') {
-            throw new UnauthorizedException("No user found error.", 401);
+            throw new UnauthorizedException('You do not have the required role to access this resource.', 403);
         }
 
         return $next($request);
