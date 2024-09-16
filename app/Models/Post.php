@@ -31,4 +31,28 @@ class Post extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+/**
+     * Scope a query to search posts.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $searchTerm
+     * @param \App\Models\User $user
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSearchPosts($query, $searchTerm, User $user)
+    {
+        if ($user->is_admin) {
+            // Admin can search through all posts
+            return $query->where('title', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('body', 'LIKE', "%{$searchTerm}%");
+        } else {
+            // Regular users can only search their own posts
+            return $query->where('user_id', $user->id)
+                        ->where(function ($query) use ($searchTerm) {
+                            $query->where('title', 'LIKE', "%{$searchTerm}%")
+                                ->orWhere('body', 'LIKE', "%{$searchTerm}%");
+                        });
+        }
+    }
 }

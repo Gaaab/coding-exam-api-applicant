@@ -11,6 +11,23 @@ class PostService
 {
     public static $statuses = ['DRAFT', 'PUBLISHED'];
 
+    public function searchPosts(User $user, array $payload)
+    {
+        $posts = Post::searchPosts($payload['query'], $user);
+
+        if (isset($payload['published_at']) && isset($payload['published_at']['start_date']) && isset($payload['published_at']['end_date'])) {
+            $posts->whereBetween('published_at', [$payload['published_at']['start_date'], $payload['published_at']['end_date']]);
+        }
+
+        if (isset($payload['paginate']) && $payload['paginate'] === false) {
+            return $posts->limit($payload['rowsPerPage'] ?? 10)->get();
+        }
+
+        return $posts
+            ->orderBy($payload['sortBy'] ?? 'id', $payload['sortDirection'] ?? 'desc')
+            ->paginate($payload['rowsPerPage'] ?? 10);
+    }
+
     public function allPosts(User $user, $payload = [])
     {
         // Only admin can get all posts

@@ -11,10 +11,122 @@ use Illuminate\Validation\UnauthorizedException;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Http\Requests\Post\SearchRequest as SearchPostRequest;
 
 class PostsController extends Controller
 {
     public function __construct(protected PostService $postService) {}
+
+    #[Route('/api/posts/search', methods: ['GET'], name: 'search_posts')]
+    #[OA\Get(
+        path: '/api/posts/search',
+        summary: 'Search posts',
+        description: 'Search posts based on query parameters',
+        operationId: 'searchPosts',
+        tags: ['Posts'],
+        parameters: [
+            new OA\Parameter(
+                name: 'Accept',
+                in: 'header',
+                required: true,
+                description: 'Media type expected by the client',
+                schema: new OA\Schema(type: 'string', example: 'application/json')
+            ),
+            new OA\Parameter(
+                name: 'query',
+                in: 'query',
+                required: true,
+                schema: new OA\Schema(type: 'string'),
+                description: 'Search term for the posts'
+            ),
+            new OA\Parameter(
+                name: 'rowsPerPage',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'integer'),
+                description: 'Number of rows per page'
+            ),
+            new OA\Parameter(
+                name: 'sortBy',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(
+                    type: 'string',
+                    enum: ['id', 'created_at', 'published_at']
+                ),
+                description: 'Sort by fields (id, created_at, published_at)'
+            ),
+            new OA\Parameter(
+                name: 'sortDirection',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(
+                    type: 'string',
+                    enum: ['asc', 'desc']
+                ),
+                description: 'Sort direction (asc or desc)'
+            ),
+            new OA\Parameter(
+                name: 'paginate',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'boolean'),
+                description: 'Flag to paginate the results'
+            ),
+            new OA\Parameter(
+                name: 'status',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(
+                    type: 'string',
+                    enum: PostService::$statuses // Assuming PostService::$statuses contains status options
+                ),
+                description: 'Filter by post status'
+            ),
+            new OA\Parameter(
+                name: 'published_at[start_date]',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string', format: 'date'),
+                description: 'Filter by published start date'
+            ),
+            new OA\Parameter(
+                name: 'published_at[end_date]',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string', format: 'date'),
+                description: 'Filter by published end date'
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'List of posts matching the search criteria',
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(ref: '#/components/schemas/Post')
+                )
+            ),
+            new OA\Response(response: 422, description: 'Invalid input'),
+            new OA\Response(
+                response: 401,
+                description: 'Unauthorize - User does not exists',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(property: 'error', type: 'string', example: 'The following user does not exists.')
+                    ]
+                )
+            ),
+        ]
+    )]
+    public function searchPosts(SearchPostRequest $request)
+    {
+        return $this->postService->searchPosts(
+            user: $request->user(),
+            payload: $request->safe()->all()
+        );
+    }
 
     #[Route('/api/posts', methods: ['GET'], name: 'get_user_posts')]
     #[OA\Get(
@@ -192,6 +304,7 @@ class PostsController extends Controller
                     new OA\Property(property: 'title', type: 'string', example: 'My New Post'),
                     new OA\Property(property: 'body', type: 'string', example: 'This is the content of my post.'),
                     new OA\Property(property: 'banner_image_url', type: 'string', example: 'https://via.placeholder.com/800x400.png/0022ff?text=business+nostrum'),
+                    new OA\Property(property: 'status', type: 'string', example: 'DRAFT | PUBLISHED'),
                 ]
             )
         ),

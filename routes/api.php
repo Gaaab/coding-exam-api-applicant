@@ -25,6 +25,7 @@ Route::middleware('api', 'auth:sanctum')->group(function () {
 
     Route::prefix('posts')->group(function () {
         Route::get('/', [PostsController::class, 'selfPosts']);
+        Route::get('search', [PostsController::class, 'searchPosts']);
         Route::get('all', [PostsController::class, 'allPosts'])->middleware(AdminOnlyMiddleware::class);
         Route::get('create', [PostsController::class, 'createPost']);
         Route::post('{post}/archive', [PostsController::class, 'archivePost']);
