@@ -7,8 +7,8 @@ use App\Http\Middleware\AdminOnlyMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('auth')->middleware('guest')->group(function () {
-    Route::post('login', [AuthController::class, 'login']);
+Route::prefix('auth')->group(function () {
+    Route::post('login', [AuthController::class, 'login'])->middleware('guest');
     Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 });
 
@@ -27,10 +27,10 @@ Route::middleware('api', 'auth:sanctum')->group(function () {
         Route::get('/', [PostsController::class, 'selfPosts']);
         Route::get('search', [PostsController::class, 'searchPosts']);
         Route::get('all', [PostsController::class, 'allPosts'])->middleware(AdminOnlyMiddleware::class);
-        Route::get('create', [PostsController::class, 'createPost']);
+        Route::post('create', [PostsController::class, 'createPost']);
+        Route::post('{post}/update', [PostsController::class, 'updatePost']);
         Route::post('{post}/archive', [PostsController::class, 'archivePost']);
         Route::post('{post}/restore', [PostsController::class, 'restorePost']);
         Route::get('{post}/find', [PostsController::class, 'findPost']);
-        Route::post('{post}/update-status', [PostsController::class, 'update-status']);
     });
 });

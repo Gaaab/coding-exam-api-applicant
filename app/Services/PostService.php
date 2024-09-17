@@ -69,9 +69,20 @@ class PostService
         return $user->posts()->create($payload->toArray());
     }
 
-    public function updatePost(Post $post, PostDto $payload)
+    public function updatePost(Post $post, array $payload)
     {
-        $post->fill($payload->toArray())->update();
+        $post->fill($payload);
+
+        if ($payload['status'] === 'PUBLISHED') {
+            $post->forceFill(['published_at' => now()]);
+        } else {
+            $post->forceFill(['published_at' => null]);
+        }
+
+        $post->update();
+
+        return $post->fresh('user');
+
 
         return $post->fresh(['user']);
     }

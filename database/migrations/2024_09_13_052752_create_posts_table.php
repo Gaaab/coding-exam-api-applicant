@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('title')->unique();
             $table->string('banner_image_url')->nullable();
             $table->text('body');
-            $table->timestamp('published_at');
+            $table->timestamp('published_at')->nullable();
             $table->enum('status', ['DRAFT', 'PUBLISHED'])->default('DRAFT');
             $table->timestamps();
             $table->softDeletes();

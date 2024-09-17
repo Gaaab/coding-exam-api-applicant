@@ -7,14 +7,22 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
-class CreateRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return Auth::check();
+        $post = $this->route('post');
+
+        $user = Auth::user();
+
+        if ($user->role->name === 'admin') {
+            return true;
+        }
+
+        return $post->user_id == $user->id;
     }
 
     /**
@@ -24,12 +32,14 @@ class CreateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $post = $this->route('post');
+
         return [
             'title' => [
                 'required',
                 'min:6',
                 'max:255',
-                Rule::unique('posts', 'title'),
+                Rule::unique('posts', 'title')->ignoreModel($post),
             ],
             'body' => [
                 'required',

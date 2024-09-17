@@ -21,13 +21,6 @@ class UsersController extends Controller
                 required: true,
                 description: 'Media type expected by the client',
                 schema: new OA\Schema(type: 'string', example: 'application/json')
-            ),
-            new OA\Parameter(
-                name: 'Authorization',
-                in: 'header',
-                required: true,
-                description: 'Bearer token for user authentication',
-                schema: new OA\Schema(type: 'string', example: 'Bearer JWT_TOKEN_HERE')
             )
         ],
         responses: [
@@ -65,6 +58,11 @@ class UsersController extends Controller
                 response: 401,
                 description: 'Unauthorized - Invalid or missing token'
             )
+        ],
+        security: [
+            'sanctum' => [
+                'bearerAuth' => []
+            ]
         ]
     )]
     public function selfRequest(Request $request)

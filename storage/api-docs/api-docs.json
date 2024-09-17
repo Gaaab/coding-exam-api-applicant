@@ -117,6 +117,144 @@
                 }
             }
         },
+        "/api/posts/search": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Search posts",
+                "description": "Search posts based on query parameters",
+                "operationId": "0fac29de97628c7fccbf66c1e9e10798",
+                "parameters": [
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "description": "Media type expected by the client",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "application/json"
+                        }
+                    },
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "Search term for the posts",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "rowsPerPage",
+                        "in": "query",
+                        "description": "Number of rows per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sortBy",
+                        "in": "query",
+                        "description": "Sort by fields (id, created_at, published_at)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "id",
+                                "created_at",
+                                "published_at"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sortDirection",
+                        "in": "query",
+                        "description": "Sort direction (asc or desc)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "paginate",
+                        "in": "query",
+                        "description": "Flag to paginate the results",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by post status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "DRAFT",
+                                "PUBLISHED"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "published_at (start_date)",
+                        "in": "query",
+                        "description": "Filter by published start date",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "published_at (end_date)",
+                        "in": "query",
+                        "description": "Filter by published end date",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of posts matching the search criteria"
+                    },
+                    "422": {
+                        "description": "Invalid input"
+                    },
+                    "401": {
+                        "description": "Unauthorize - User does not exists",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "The following user does not exists."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": {
+                    "sanctum": {
+                        "bearerAuth": []
+                    }
+                }
+            }
+        },
         "/api/posts": {
             "get": {
                 "tags": [
@@ -209,19 +347,9 @@
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Retrieve all posts (admin only)",
+                "summary": "Retrieve all posts (admin role only)",
                 "operationId": "e965d2b5121ae5ac5e24c8d7c4bce43b",
                 "parameters": [
-                    {
-                        "name": "Authorization",
-                        "in": "header",
-                        "description": "Bearer token for user authentication",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "Bearer JWT_TOKEN_HERE"
-                        }
-                    },
                     {
                         "name": "Accept",
                         "in": "header",
@@ -325,6 +453,11 @@
                             }
                         }
                     }
+                },
+                "security": {
+                    "sanctum": {
+                        "bearerAuth": []
+                    }
                 }
             }
         },
@@ -336,16 +469,6 @@
                 "summary": "Create a new post for the current user",
                 "operationId": "e23b6c439c19d51685577415f72d661c",
                 "parameters": [
-                    {
-                        "name": "Authorization",
-                        "in": "header",
-                        "description": "Bearer token for user authentication",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "Bearer JWT_TOKEN_HERE"
-                        }
-                    },
                     {
                         "name": "Accept",
                         "in": "header",
@@ -374,7 +497,12 @@
                                     },
                                     "banner_image_url": {
                                         "type": "string",
-                                        "example": "https://via.placeholder.com/800x400.png/0022ff?text=business+nostrum"
+                                        "example": "https://...",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "DRAFT"
                                     }
                                 },
                                 "type": "object"
@@ -384,7 +512,15 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Post created successfully"
+                        "description": "Returns the Post Model Object"
+                    },
+                    "422": {
+                        "description": "Post Create Validation Error"
+                    }
+                },
+                "security": {
+                    "sanctum": {
+                        "bearerAuth": []
                     }
                 }
             }
@@ -397,16 +533,6 @@
                 "summary": "Archive a post by ID",
                 "operationId": "8df2566cf1c794e8a3a8bce1a95ef40c",
                 "parameters": [
-                    {
-                        "name": "Authorization",
-                        "in": "header",
-                        "description": "Bearer token for user authentication",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "Bearer JWT_TOKEN_HERE"
-                        }
-                    },
                     {
                         "name": "post",
                         "in": "path",
@@ -430,6 +556,14 @@
                 "responses": {
                     "204": {
                         "description": "Post archived successfully"
+                    },
+                    "404": {
+                        "description": "No query results for model Post"
+                    }
+                },
+                "security": {
+                    "sanctum": {
+                        "bearerAuth": []
                     }
                 }
             }
@@ -442,16 +576,6 @@
                 "summary": "Restore an archived post by ID",
                 "operationId": "cb6fcd0bbde4d96e92e733c903f4d498",
                 "parameters": [
-                    {
-                        "name": "Authorization",
-                        "in": "header",
-                        "description": "Bearer token for user authentication",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "Bearer JWT_TOKEN_HERE"
-                        }
-                    },
                     {
                         "name": "post",
                         "in": "path",
@@ -475,6 +599,11 @@
                 "responses": {
                     "204": {
                         "description": "Post restored successfully"
+                    }
+                },
+                "security": {
+                    "sanctum": {
+                        "bearerAuth": []
                     }
                 }
             }
@@ -572,28 +701,20 @@
                     }
                 },
                 "security": {
-                    "sanctum": {}
+                    "sanctum": {
+                        "bearerAuth": []
+                    }
                 }
             }
         },
-        "/api/posts/{post}/update-status": {
+        "/api/posts/{post}/update": {
             "post": {
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Update the status of a post by ID",
-                "operationId": "a4bcb6e2a6026c320273fd07d8b0f753",
+                "summary": "Update a post by ID",
+                "operationId": "d555a7afd7112de8d862a9d86edc1b39",
                 "parameters": [
-                    {
-                        "name": "Authorization",
-                        "in": "header",
-                        "description": "Bearer token for user authentication",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "Bearer JWT_TOKEN_HERE"
-                        }
-                    },
                     {
                         "name": "post",
                         "in": "path",
@@ -615,19 +736,32 @@
                     }
                 ],
                 "requestBody": {
-                    "description": "Status update details",
+                    "description": "Post update details",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "My Post Title"
+                                    },
+                                    "body": {
+                                        "type": "string",
+                                        "example": "My Post Body"
+                                    },
                                     "status": {
                                         "type": "string",
                                         "enum": [
                                             "DRAFT",
                                             "PUBLISHED"
                                         ],
-                                        "example": "PUBLISHED"
+                                        "example": "DRAFT"
+                                    },
+                                    "banner_image_url": {
+                                        "type": "string",
+                                        "example": "https://...",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -640,7 +774,15 @@
                         "description": "Post status updated successfully"
                     },
                     "404": {
-                        "description": "Post not found"
+                        "description": "Post model not found"
+                    },
+                    "422": {
+                        "description": "Validation Content Error"
+                    }
+                },
+                "security": {
+                    "sanctum": {
+                        "bearerAuth": []
                     }
                 }
             }
@@ -661,16 +803,6 @@
                         "schema": {
                             "type": "string",
                             "example": "application/json"
-                        }
-                    },
-                    {
-                        "name": "Authorization",
-                        "in": "header",
-                        "description": "Bearer token for user authentication",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "Bearer JWT_TOKEN_HERE"
                         }
                     }
                 ],
@@ -762,6 +894,11 @@
                     },
                     "401": {
                         "description": "Unauthorized - Invalid or missing token"
+                    }
+                },
+                "security": {
+                    "sanctum": {
+                        "bearerAuth": []
                     }
                 }
             }

@@ -13,6 +13,7 @@ class Post extends Model
     protected $guarded = [
         'id',
         'user_id',
+        'published_at',
     ];
 
     /**

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Dto\PostDto;
 use App\Http\Requests\Post\CreateRequest as CreatePostRequest;
+use App\Http\Requests\Post\SearchRequest as SearchPostRequest;
+use App\Http\Requests\Post\UpdateRequest as UpdatePostRequest;
+use App\Dto\PostDto;
 use App\Models\Post;
 use App\Services\PostService;
 use Illuminate\Http\Request;
@@ -11,7 +13,6 @@ use Illuminate\Validation\UnauthorizedException;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use App\Http\Requests\Post\SearchRequest as SearchPostRequest;
 
 class PostsController extends Controller
 {
@@ -22,7 +23,6 @@ class PostsController extends Controller
         path: '/api/posts/search',
         summary: 'Search posts',
         description: 'Search posts based on query parameters',
-        operationId: 'searchPosts',
         tags: ['Posts'],
         parameters: [
             new OA\Parameter(
@@ -79,33 +79,29 @@ class PostsController extends Controller
                 required: false,
                 schema: new OA\Schema(
                     type: 'string',
-                    enum: PostService::$statuses // Assuming PostService::$statuses contains status options
+                    enum: ['DRAFT', 'PUBLISHED'] // Assuming PostService::$statuses contains status options
                 ),
                 description: 'Filter by post status'
             ),
             new OA\Parameter(
-                name: 'published_at[start_date]',
+                name: 'published_at (start_date)',
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string', format: 'date'),
                 description: 'Filter by published start date'
             ),
             new OA\Parameter(
-                name: 'published_at[end_date]',
+                name: 'published_at (end_date)',
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string', format: 'date'),
                 description: 'Filter by published end date'
-            ),
+            )
         ],
         responses: [
             new OA\Response(
                 response: 200,
                 description: 'List of posts matching the search criteria',
-                content: new OA\JsonContent(
-                    type: 'array',
-                    items: new OA\Items(ref: '#/components/schemas/Post')
-                )
             ),
             new OA\Response(response: 422, description: 'Invalid input'),
             new OA\Response(
@@ -118,6 +114,11 @@ class PostsController extends Controller
                     ]
                 )
             ),
+        ],
+        security: [
+            'sanctum' => [
+                'bearerAuth' => []
+            ]
         ]
     )]
     public function searchPosts(SearchPostRequest $request)
@@ -186,16 +187,9 @@ class PostsController extends Controller
     #[Route('/api/posts/all', methods: ['GET'], name: 'get_all_posts')]
     #[OA\Get(
         path: '/api/posts/all',
-        summary: 'Retrieve all posts (admin only)',
+        summary: 'Retrieve all posts (admin role only)',
         tags: ['Posts'],
         parameters: [
-            new OA\Parameter(
-                name: 'Authorization',
-                in: 'header',
-                required: true,
-                description: 'Bearer token for user authentication',
-                schema: new OA\Schema(type: 'string', example: 'Bearer JWT_TOKEN_HERE')
-            ),
             new OA\Parameter(
                 name: 'Accept',
                 in: 'header',
@@ -247,6 +241,11 @@ class PostsController extends Controller
                     ]
                 )
             ),
+        ],
+        security: [
+            'sanctum' => [
+                'bearerAuth' => []
+            ]
         ]
     )]
     public function allPosts(Request $request)
@@ -281,13 +280,6 @@ class PostsController extends Controller
         tags: ['Posts'],
         parameters: [
             new OA\Parameter(
-                name: 'Authorization',
-                in: 'header',
-                required: true,
-                description: 'Bearer token for user authentication',
-                schema: new OA\Schema(type: 'string', example: 'Bearer JWT_TOKEN_HERE')
-            ),
-            new OA\Parameter(
                 name: 'Accept',
                 in: 'header',
                 required: true,
@@ -303,13 +295,19 @@ class PostsController extends Controller
                 properties: [
                     new OA\Property(property: 'title', type: 'string', example: 'My New Post'),
                     new OA\Property(property: 'body', type: 'string', example: 'This is the content of my post.'),
-                    new OA\Property(property: 'banner_image_url', type: 'string', example: 'https://via.placeholder.com/800x400.png/0022ff?text=business+nostrum'),
-                    new OA\Property(property: 'status', type: 'string', example: 'DRAFT | PUBLISHED'),
+                    new OA\Property(property: 'banner_image_url', type: 'string', nullable: true, example: 'https://...'),
+                    new OA\Property(property: 'status', type: 'string', example: 'DRAFT'),
                 ]
             )
         ),
         responses: [
-            new OA\Response(response: 201, description: 'Post created successfully')
+            new OA\Response(response: 201, description: 'Returns the Post Model Object'),
+            new OA\Response(response: 422, description: 'Post Create Validation Error'),
+        ],
+        security: [
+            'sanctum' => [
+                'bearerAuth' => []
+            ]
         ]
     )]
     public function createPost(CreatePostRequest $request)
@@ -326,13 +324,6 @@ class PostsController extends Controller
         tags: ['Posts'],
         parameters: [
             new OA\Parameter(
-                name: 'Authorization',
-                in: 'header',
-                required: true,
-                description: 'Bearer token for user authentication',
-                schema: new OA\Schema(type: 'string', example: 'Bearer JWT_TOKEN_HERE')
-            ),
-            new OA\Parameter(
                 name: 'post',
                 in: 'path',
                 required: true,
@@ -348,13 +339,22 @@ class PostsController extends Controller
             )
         ],
         responses: [
-            new OA\Response(response: 204, description: 'Post archived successfully')
+            new OA\Response(response: 204, description: 'Post archived successfully'),
+            new OA\Response(response: 404, description: 'No query results for model Post'),
+        ],
+        security: [
+            'sanctum' => [
+                'bearerAuth' => []
+            ]
         ]
     )]
-    public function archivePost(Post $post): JsonResponse
+    public function archivePost(Post $post)
     {
-        // Logic to archive the post
-        return new JsonResponse(null, 204);
+        if (!is_null($post->deleted_at)) return $post;
+
+        $post->delete();
+
+        return $post;
     }
 
     #[Route('/api/posts/{post}/restore', methods: ['POST'], name: 'restore_post')]
@@ -363,13 +363,6 @@ class PostsController extends Controller
         summary: 'Restore an archived post by ID',
         tags: ['Posts'],
         parameters: [
-            new OA\Parameter(
-                name: 'Authorization',
-                in: 'header',
-                required: true,
-                description: 'Bearer token for user authentication',
-                schema: new OA\Schema(type: 'string', example: 'Bearer JWT_TOKEN_HERE')
-            ),
             new OA\Parameter(
                 name: 'post',
                 in: 'path',
@@ -387,12 +380,22 @@ class PostsController extends Controller
         ],
         responses: [
             new OA\Response(response: 204, description: 'Post restored successfully')
+        ],
+        security: [
+            'sanctum' => [
+                'bearerAuth' => []
+            ]
         ]
     )]
-    public function restorePost(int $post): JsonResponse
+    public function restorePost($post)
     {
-        // Logic to restore the post
-        return new JsonResponse(null, 204);
+        $post = Post::withTrashed()->findOrFail($post);
+
+        if (is_null($post->deleted_at)) return $post;
+
+        $post->restore();
+
+        return $post;
     }
 
     #[Route('/api/posts/{post}/find', methods: ['GET'], name: 'find_post')]
@@ -446,7 +449,9 @@ class PostsController extends Controller
             )
         ],
         security: [
-            'sanctum' => []
+            'sanctum' => [
+                'bearerAuth' => []
+            ]
         ]
     )]
     public function findPost(Post $post)
@@ -454,19 +459,12 @@ class PostsController extends Controller
         return $this->postService->findPost($post);
     }
 
-    #[Route('/api/posts/{post}/update-status', methods: ['POST'], name: 'update_post_status')]
+    #[Route('/api/posts/{post}/update', methods: ['POST'], name: 'update_post')]
     #[OA\Post(
-        path: '/api/posts/{post}/update-status',
-        summary: 'Update the status of a post by ID',
+        path: '/api/posts/{post}/update',
+        summary: 'Update a post by ID',
         tags: ['Posts'],
         parameters: [
-            new OA\Parameter(
-                name: 'Authorization',
-                in: 'header',
-                required: true,
-                description: 'Bearer token for user authentication',
-                schema: new OA\Schema(type: 'string', example: 'Bearer JWT_TOKEN_HERE')
-            ),
             new OA\Parameter(
                 name: 'post',
                 in: 'path',
@@ -483,23 +481,32 @@ class PostsController extends Controller
             )
         ],
         requestBody: new OA\RequestBody(
-            description: 'Status update details',
+            description: 'Post update details',
             required: true,
             content: new OA\JsonContent(
+
                 type: 'object',
                 properties: [
-                    new OA\Property(property: 'status', type: 'string', enum: ['DRAFT', 'PUBLISHED'], example: 'PUBLISHED')
+                    new OA\Property(property: 'title', type: 'string', example: 'My Post Title'),
+                    new OA\Property(property: 'body', type: 'string', example: 'My Post Body'),
+                    new OA\Property(property: 'status', type: 'string', enum: ['DRAFT', 'PUBLISHED'], example: 'DRAFT'),
+                    new OA\Property(property: 'banner_image_url', type: 'string', nullable: true, example: 'https://...')
                 ]
             )
         ),
         responses: [
             new OA\Response(response: 200, description: 'Post status updated successfully'),
-            new OA\Response(response: 404, description: 'Post not found')
+            new OA\Response(response: 404, description: 'Post model not found'),
+            new OA\Response(response: 422, description: 'Validation Content Error'),
+        ],
+        security: [
+            'sanctum' => [
+                'bearerAuth' => []
+            ]
         ]
     )]
-    public function updatePostStatus(Post $post, Request $request): JsonResponse
+    public function updatePost(Post $post, UpdatePostRequest $request)
     {
-        // Logic to update the post status
-        return new JsonResponse([]);
+        return $this->postService->updatePost($post, $request->validated());
     }
 }
